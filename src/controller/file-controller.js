@@ -2,8 +2,9 @@ const processFile = require("../middleware/upload");
 const { format } = require("util");
 const { Storage } = require("@google-cloud/storage");
 // Instantiate a storage client with credentials
-const storage = new Storage({ keyFilename: "google-cloud-key.json" });
-const bucket = storage.bucket("bezkoder-e-commerce");
+const storage = new Storage({ keyFilename: "key.json" });
+const bucket = storage.bucket("c22-pc418-bucket");
+
 const upload = async (req, res) => {
   try {
     await processFile(req, res);
@@ -50,6 +51,38 @@ const upload = async (req, res) => {
     });
   }
 };
+
+const getListFiles = async (req, res) => {
+    try {
+        const [files] = await bucket.getFiles();
+        let fileInfos = [];
+        files.forEach((file) => {
+            fileInfos.push({
+                name: file.name,
+                url: file.metadata.mediaLink,
+            });
+        });
+        res.status(200).send(fileInfos);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({
+            message: "Unable to read list of files!",
+        });
+    }
+};
+
+const download = async (req, res) => {
+    try {
+        const [metaData] = await bucket.file(req.params.name).getMetadata();
+        res.redirect(metaData.mediaLink);
+        
+    } catch (err) {
+        res.status(500).send({
+        message: "Could not download the file. " + err,
+        });
+    }
+};
+
 module.exports = {
   upload,
   getListFiles,
