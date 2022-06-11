@@ -40,6 +40,11 @@ const upload = async (req, res) => {
     });
     blobStream.end(req.file.buffer);
   } catch (err) {
+    if (err.code == "LIMIT_FILE_SIZE") {
+        return res.status(500).send({
+          message: "File size cannot be larger than 2MB!",
+        });
+    }
     res.status(500).send({
       message: `Could not upload the file: ${req.file.originalname}. ${err}`,
     });
